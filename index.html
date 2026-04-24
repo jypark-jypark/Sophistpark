@@ -2,861 +2,685 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>소피스트박 AI 분석지도</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>대구 부동산 AI 분석 지도</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --navy: #1a2744;
-    --blue: #2563eb;
-    --blue-dark: #1d4ed8;
-    --pink: #ec4899;
-    --teal: #0d9488;
-    --gray-dark: #1e293b;
-    --gray: #64748b;
-    --white: #ffffff;
-    --yellow: #f59e0b;
-    --red: #ef4444;
-    --green: #10b981;
-  }
+:root {
+  --bg: #111827;
+  --surface: #1f2937;
+  --blue: #3b82f6;
+  --blue-bright: #60a5fa;
+  --pink: #ec4899;
+  --teal: #10b981;
+  --yellow: #f59e0b;
+  --slate: #94a3b8;
+  --white: #f8fafc;
+  --border: rgba(255,255,255,0.08);
+  --shadow: 0 4px 24px rgba(0,0,0,0.5);
+}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 
-  body {
-    font-family: 'Noto Sans KR', sans-serif;
-    background: #0f172a;
-    color: var(--white);
-    height: 100vh;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
+html, body {
+  width:100%; height:100%;
+  overflow:hidden;
+  font-family:'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  touch-action: none;
+}
 
-  /* ── 상단 헤더 ── */
-  #header {
-    background: linear-gradient(135deg, #1a2744 0%, #0f172a 100%);
-    border-bottom: 1px solid rgba(37,99,235,0.3);
-    padding: 10px 20px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    z-index: 1000;
-    flex-shrink: 0;
-  }
+/* ═══ 헤더 ═══ */
+#header {
+  position: fixed;
+  top:0; left:0; right:0;
+  height: 50px;
+  background: rgba(15,23,42,0.97);
+  border-bottom: 1px solid rgba(59,130,246,0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  z-index: 1000;
+}
+.logo { display:flex; align-items:center; gap:8px; }
+.logo-icon {
+  width:28px; height:28px;
+  background: linear-gradient(135deg,#3b82f6,#818cf8);
+  border-radius:7px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px;
+}
+.logo-text .brand { font-size:12px; font-weight:800; color:#93c5fd; letter-spacing:-0.2px; }
+.logo-text .sub   { font-size:9px;  color:#64748b; }
+.hright { display:flex; align-items:center; gap:5px; }
+.badge {
+  background:rgba(59,130,246,0.15);
+  border:1px solid rgba(59,130,246,0.3);
+  border-radius:14px; padding:3px 8px;
+  font-size:10px; color:#93c5fd; font-weight:600; white-space:nowrap;
+}
+.cnt-badge {
+  background:rgba(245,158,11,0.15);
+  border:1px solid rgba(245,158,11,0.35);
+  border-radius:14px; padding:3px 8px;
+  font-size:10px; color:#fbbf24; font-weight:700; white-space:nowrap;
+}
 
-  #header h1 {
-    font-size: 18px;
-    font-weight: 900;
-    color: var(--white);
-    letter-spacing: -0.5px;
-  }
+/* ═══ 구 선택 스크롤 바 ═══ */
+#dbar {
+  position: fixed;
+  top:50px; left:0; right:0;
+  height:36px;
+  background: rgba(15,23,42,0.96);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  display:flex; align-items:center;
+  overflow-x:auto; overflow-y:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  gap:4px; padding:0 10px;
+  z-index:990;
+}
+#dbar::-webkit-scrollbar { display:none; }
+.d-btn {
+  flex-shrink:0;
+  padding:3px 10px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,0.1);
+  background:transparent;
+  color:#94a3b8;
+  font-size:11px; font-family:'Noto Sans KR',sans-serif; font-weight:600;
+  cursor:pointer; transition:all 0.15s; white-space:nowrap;
+}
+.d-btn.active { background:var(--blue); border-color:var(--blue); color:#fff; }
 
-  #header h1 span { color: #60a5fa; }
+/* ═══ 지도 래퍼 ═══ */
+#mwrap {
+  position:fixed;
+  top:86px; left:0; right:0; bottom:0;
+  overflow:hidden;
+  background:#0c1525;
+  touch-action:none;
+}
 
-  .header-badge {
-    background: rgba(37,99,235,0.2);
-    border: 1px solid rgba(37,99,235,0.4);
-    border-radius: 20px;
-    padding: 4px 12px;
-    font-size: 12px;
-    color: #93c5fd;
-    font-weight: 500;
-  }
+/* SVG 지도 — 절대 위치, JS가 transform으로 제어 */
+#map {
+  position:absolute;
+  top:0; left:0;
+  width:1200px; height:750px;
+  transform-origin:0 0;
+  will-change:transform;
+  cursor:grab;
+  user-select:none;
+}
+#map:active { cursor:grabbing; }
 
-  /* ── 사이드 패널 ── */
-  #sidebar {
-    position: absolute;
-    left: 0; top: 56px;
-    width: 200px;
-    height: calc(100vh - 56px);
-    background: rgba(15,23,42,0.95);
-    border-right: 1px solid rgba(37,99,235,0.2);
-    z-index: 900;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding: 12px 8px;
-    overflow-y: auto;
-  }
+/* ═══ 줌 버튼 ═══ */
+#zbtn {
+  position:fixed; right:11px; bottom:108px;
+  display:flex; flex-direction:column; gap:5px; z-index:950;
+}
+.zb {
+  width:40px; height:40px;
+  background:rgba(22,30,46,0.96);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:10px; color:#fff;
+  font-size:22px; font-weight:300;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; box-shadow:var(--shadow); transition:background 0.15s;
+}
+.zb:active { background:rgba(59,130,246,0.4); }
 
-  .sidebar-label {
-    font-size: 10px;
-    color: var(--gray);
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 8px 8px 4px;
-  }
+/* ═══ 필터 토글 FAB ═══ */
+#ftoggle {
+  position:fixed; left:11px; bottom:18px;
+  width:44px; height:44px;
+  background:var(--blue); border:none; border-radius:50%;
+  color:#fff; font-size:19px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; box-shadow:0 4px 18px rgba(59,130,246,0.5);
+  z-index:970; transition:transform 0.2s;
+}
+#ftoggle.open { transform:rotate(45deg); }
 
-  .filter-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    border-radius: 8px;
-    border: 1px solid transparent;
-    background: transparent;
-    color: #94a3b8;
-    font-size: 12px;
-    font-family: 'Noto Sans KR', sans-serif;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s;
-    text-align: left;
-    width: 100%;
-  }
+/* ═══ 하단 드로어 ═══ */
+#drawer {
+  position:fixed; left:0; right:0; bottom:-100%;
+  background:rgba(14,22,38,0.98);
+  border-top:1px solid rgba(59,130,246,0.22);
+  border-radius:18px 18px 0 0;
+  padding:12px 14px 28px;
+  z-index:960; transition:bottom 0.3s cubic-bezier(0.4,0,0.2,1);
+  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+  max-height:65vh; overflow-y:auto;
+}
+#drawer.open { bottom:0; }
+.dhandle {
+  width:34px; height:4px; background:rgba(255,255,255,0.18);
+  border-radius:2px; margin:0 auto 12px;
+}
+.fsec { margin-bottom:14px; }
+.ftitle {
+  font-size:9px; font-weight:700; color:#64748b;
+  letter-spacing:1.2px; text-transform:uppercase; margin-bottom:8px;
+}
+.chips { display:flex; flex-wrap:wrap; gap:6px; }
+.chip {
+  display:flex; align-items:center; gap:5px;
+  padding:5px 11px; border-radius:18px;
+  border:1px solid rgba(255,255,255,0.1);
+  background:rgba(255,255,255,0.04);
+  color:#94a3b8; font-size:12px;
+  font-family:'Noto Sans KR',sans-serif; font-weight:500;
+  cursor:pointer; transition:all 0.15s; white-space:nowrap;
+}
+.chip.active {
+  border-color:rgba(59,130,246,0.5);
+  background:rgba(59,130,246,0.18); color:#93c5fd;
+}
+.cdot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
 
-  .filter-btn:hover, .filter-btn.active {
-    background: rgba(37,99,235,0.15);
-    border-color: rgba(37,99,235,0.4);
-    color: #93c5fd;
-  }
+/* ═══ 범례 ═══ */
+#legend {
+  position:fixed; right:11px; bottom:18px;
+  background:rgba(14,22,38,0.92);
+  border:1px solid rgba(255,255,255,0.09);
+  border-radius:10px; padding:8px 11px; z-index:950;
+  backdrop-filter:blur(10px);
+}
+#legend h4 {
+  font-size:8px; color:#64748b; letter-spacing:1px;
+  font-weight:700; text-transform:uppercase; margin-bottom:5px;
+}
+.lr { display:flex; align-items:center; gap:6px; font-size:10px; color:#cbd5e1; margin-bottom:3px; }
+.ld { width:8px; height:8px; border-radius:2px; flex-shrink:0; }
 
-  .filter-btn .dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
+/* ═══ 정보 카드 ═══ */
+#icard {
+  position:fixed; bottom:72px; left:50%;
+  transform:translateX(-50%) translateY(0);
+  background:rgba(14,22,38,0.98);
+  border:1px solid rgba(59,130,246,0.35);
+  border-radius:14px; padding:13px 16px;
+  min-width:210px; max-width:86vw;
+  z-index:980; backdrop-filter:blur(16px);
+  box-shadow:0 8px 40px rgba(0,0,0,0.65);
+  display:none; animation:sup 0.2s ease;
+}
+@keyframes sup {
+  from { transform:translateX(-50%) translateY(16px); opacity:0; }
+  to   { transform:translateX(-50%) translateY(0); opacity:1; }
+}
+#icard .xbtn {
+  position:absolute; top:8px; right:10px;
+  background:none; border:none; color:#64748b; font-size:15px; cursor:pointer;
+}
+#icard h3 { font-size:14px; font-weight:800; color:#fff; margin-bottom:7px; }
+.irow {
+  display:flex; justify-content:space-between; align-items:center;
+  gap:10px; font-size:11px; color:#64748b;
+  margin-top:4px; border-top:1px solid rgba(255,255,255,0.06); padding-top:4px;
+}
+.irow:first-of-type { border-top:none; padding-top:0; margin-top:0; }
+.ival  { color:#e2e8f0; font-weight:600; }
+.ipr   { color:#fbbf24; font-weight:800; font-size:13px; }
+.ibadge {
+  background:rgba(59,130,246,0.2); border-radius:4px;
+  padding:1px 6px; font-size:10px; color:#93c5fd; font-weight:600;
+}
 
-  /* ── 지도 컨테이너 ── */
-  #map-container {
-    flex: 1;
-    margin-left: 200px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  #map {
-    width: 100%;
-    height: 100%;
-    cursor: grab;
-  }
-
-  #map:active { cursor: grabbing; }
-
-  /* ── 줌 컨트롤 ── */
-  #zoom-controls {
-    position: absolute;
-    right: 16px;
-    bottom: 80px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    z-index: 800;
-  }
-
-  .zoom-btn {
-    width: 40px; height: 40px;
-    background: rgba(15,23,42,0.95);
-    border: 1px solid rgba(37,99,235,0.3);
-    border-radius: 8px;
-    color: var(--white);
-    font-size: 20px;
-    line-height: 1;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s;
-    font-weight: 300;
-  }
-
-  .zoom-btn:hover {
-    background: rgba(37,99,235,0.3);
-    border-color: rgba(37,99,235,0.6);
-  }
-
-  /* ── 구 선택 버튼 ── */
-  #district-bar {
-    position: absolute;
-    top: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 6px;
-    z-index: 800;
-    background: rgba(15,23,42,0.9);
-    border: 1px solid rgba(37,99,235,0.3);
-    border-radius: 30px;
-    padding: 6px 10px;
-    backdrop-filter: blur(10px);
-  }
-
-  .district-btn {
-    padding: 5px 14px;
-    border-radius: 20px;
-    border: none;
-    background: transparent;
-    color: #94a3b8;
-    font-size: 12px;
-    font-family: 'Noto Sans KR', sans-serif;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.15s;
-    white-space: nowrap;
-  }
-
-  .district-btn:hover, .district-btn.active {
-    background: var(--blue);
-    color: var(--white);
-  }
-
-  /* ── 범례 ── */
-  #legend {
-    position: absolute;
-    bottom: 16px;
-    left: 16px;
-    background: rgba(15,23,42,0.9);
-    border: 1px solid rgba(37,99,235,0.2);
-    border-radius: 12px;
-    padding: 12px 16px;
-    z-index: 800;
-    backdrop-filter: blur(10px);
-  }
-
-  #legend h4 {
-    font-size: 10px;
-    color: var(--gray);
-    letter-spacing: 1px;
-    font-weight: 700;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 11px;
-    color: #cbd5e1;
-    margin-bottom: 4px;
-  }
-
-  .legend-dot {
-    width: 10px; height: 10px;
-    border-radius: 2px;
-    flex-shrink: 0;
-  }
-
-  /* ── SVG 마커 스타일 ── */
-  .apt-label {
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    fill: white;
-  }
-
-  .apt-sub {
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 10px;
-    font-weight: 400;
-    fill: #bfdbfe;
-  }
-
-  .apt-price {
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 10px;
-    font-weight: 700;
-    fill: #fbbf24;
-  }
-
-  /* 카운터 */
-  #counter {
-    position: absolute;
-    top: 12px;
-    right: 16px;
-    background: rgba(15,23,42,0.9);
-    border: 1px solid rgba(37,99,235,0.3);
-    border-radius: 10px;
-    padding: 8px 14px;
-    z-index: 800;
-    font-size: 12px;
-    color: #93c5fd;
-    backdrop-filter: blur(10px);
-  }
-
-  #counter strong { color: #fbbf24; font-size: 16px; }
-
-  /* 툴팁 */
-  #tooltip {
-    position: absolute;
-    background: rgba(15,23,42,0.97);
-    border: 1px solid rgba(37,99,235,0.4);
-    border-radius: 10px;
-    padding: 12px 16px;
-    z-index: 1000;
-    pointer-events: none;
-    display: none;
-    min-width: 180px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-  }
-
-  #tooltip h3 { font-size: 14px; font-weight: 700; color: white; margin-bottom: 4px; }
-  #tooltip .t-row { display: flex; justify-content: space-between; gap: 16px; font-size: 11px; color: #94a3b8; margin-top: 3px; }
-  #tooltip .t-val { color: #e2e8f0; font-weight: 600; }
-  #tooltip .t-price { color: #fbbf24; font-weight: 700; }
+/* ═══ SVG 텍스트 클래스 ═══ */
+.ml { font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:800; fill:#fff; }
+.ms { font-family:'Noto Sans KR',sans-serif; font-size:11px; font-weight:400; fill:#bfdbfe; }
+.mp { font-family:'Noto Sans KR',sans-serif; font-size:11px; font-weight:700; fill:#fcd34d; }
+.mst{ font-family:'Noto Sans KR',sans-serif; font-size:9px;  font-weight:700; }
 </style>
 </head>
 <body>
 
 <!-- 헤더 -->
 <div id="header">
-  <h1>🏢 소피스트박 <span>AI 분석</span> 지도</h1>
-  <div class="header-badge">추론(Inference)</div>
-  <div class="header-badge">대구 전 지역</div>
-</div>
-
-<!-- 사이드바 -->
-<div id="sidebar">
-  <div class="sidebar-label">표시 항목</div>
-  <button class="filter-btn active" onclick="toggleFilter(this,'apt')">
-    <span class="dot" style="background:#2563eb"></span>아파트
-  </button>
-  <button class="filter-btn active" onclick="toggleFilter(this,'reconstruction')">
-    <span class="dot" style="background:#ec4899"></span>재건축
-  </button>
-  <button class="filter-btn active" onclick="toggleFilter(this,'auction')">
-    <span class="dot" style="background:#1e293b;border:1px solid #64748b"></span>경매
-  </button>
-  <button class="filter-btn active" onclick="toggleFilter(this,'commercial')">
-    <span class="dot" style="background:#0d9488"></span>상가
-  </button>
-
-  <div class="sidebar-label" style="margin-top:12px">가격 필터</div>
-  <button class="filter-btn" onclick="setPrice(this,0)"><span class="dot" style="background:#60a5fa"></span>전체</button>
-  <button class="filter-btn" onclick="setPrice(this,50000)"><span class="dot" style="background:#34d399"></span>~5억</button>
-  <button class="filter-btn" onclick="setPrice(this,100000)"><span class="dot" style="background:#fbbf24"></span>5~10억</button>
-  <button class="filter-btn" onclick="setPrice(this,999999)"><span class="dot" style="background:#f87171"></span>10억+</button>
-
-  <div class="sidebar-label" style="margin-top:12px">세대수</div>
-  <button class="filter-btn" onclick="setUnits(this,0)"><span class="dot" style="background:#60a5fa"></span>전체</button>
-  <button class="filter-btn" onclick="setUnits(this,100)"><span class="dot" style="background:#a78bfa"></span>100세대+</button>
-  <button class="filter-btn" onclick="setUnits(this,300)"><span class="dot" style="background:#f472b6"></span>300세대+</button>
-  <button class="filter-btn" onclick="setUnits(this,500)"><span class="dot" style="background:#fb923c"></span>500세대+</button>
-</div>
-
-<!-- 지도 컨테이너 -->
-<div id="map-container">
-
-  <!-- 구 선택 바 -->
-  <div id="district-bar">
-    <button class="district-btn active" onclick="focusDistrict(this,'all')">전체</button>
-    <button class="district-btn" onclick="focusDistrict(this,'jung')">중구</button>
-    <button class="district-btn" onclick="focusDistrict(this,'dong')">동구</button>
-    <button class="district-btn" onclick="focusDistrict(this,'seo')">서구</button>
-    <button class="district-btn" onclick="focusDistrict(this,'nam')">남구</button>
-    <button class="district-btn" onclick="focusDistrict(this,'buk')">북구</button>
-    <button class="district-btn" onclick="focusDistrict(this,'suseong')">수성구</button>
-    <button class="district-btn" onclick="focusDistrict(this,'dalseo')">달서구</button>
-    <button class="district-btn" onclick="focusDistrict(this,'dalseong')">달성군</button>
+  <div class="logo">
+    <div class="logo-icon">🏢</div>
+    <div class="logo-text">
+      <div class="brand">소피스트박 AI 분석 지도</div>
+      <div class="sub">대구 전 지역 부동산</div>
+    </div>
   </div>
+  <div class="hright">
+    <div class="badge">추론(Inference)</div>
+    <div class="badge" style="background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.25)">대구 전지역</div>
+    <div class="cnt-badge">단지 <span id="cnt">0</span>개</div>
+  </div>
+</div>
 
-  <!-- 카운터 -->
-  <div id="counter">표시 단지: <strong id="cnt">0</strong>개</div>
+<!-- 구 선택 -->
+<div id="dbar">
+  <button class="d-btn active" onclick="focusD(this,'all')">전체</button>
+  <button class="d-btn" onclick="focusD(this,'jung')">중구</button>
+  <button class="d-btn" onclick="focusD(this,'dong')">동구</button>
+  <button class="d-btn" onclick="focusD(this,'seo')">서구</button>
+  <button class="d-btn" onclick="focusD(this,'nam')">남구</button>
+  <button class="d-btn" onclick="focusD(this,'buk')">북구</button>
+  <button class="d-btn" onclick="focusD(this,'suseong')">수성구</button>
+  <button class="d-btn" onclick="focusD(this,'dalseo')">달서구</button>
+  <button class="d-btn" onclick="focusD(this,'dalseong')">달성군</button>
+</div>
 
-  <!-- SVG 지도 -->
-  <svg id="map" viewBox="0 0 1200 750" xmlns="http://www.w3.org/2000/svg">
+<!-- 지도 -->
+<div id="mwrap">
+  <svg id="map" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" width="1200" height="750">
     <defs>
-      <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
-        <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(37,99,235,0.06)" stroke-width="0.5"/>
+      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+        <path d="M40 0L0 0 0 40" fill="none" stroke="rgba(59,130,246,0.05)" stroke-width="0.5"/>
       </pattern>
-      <filter id="glow">
-        <feGaussianBlur stdDeviation="2" result="blur"/>
-        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-      <radialGradient id="bg-grad" cx="50%" cy="50%" r="70%">
-        <stop offset="0%" stop-color="#1e3a5f" stop-opacity="0.3"/>
-        <stop offset="100%" stop-color="#0a0f1e" stop-opacity="0"/>
+      <radialGradient id="rbg" cx="55%" cy="55%" r="65%">
+        <stop offset="0%" stop-color="#1e3a5f" stop-opacity="0.45"/>
+        <stop offset="100%" stop-color="#050a14" stop-opacity="0"/>
       </radialGradient>
     </defs>
-
-    <!-- 배경 -->
-    <rect width="1200" height="750" fill="#0f172a"/>
-    <rect width="1200" height="750" fill="url(#bg-grad)"/>
+    <rect width="1200" height="750" fill="#0c1525"/>
+    <rect width="1200" height="750" fill="url(#rbg)"/>
     <rect width="1200" height="750" fill="url(#grid)"/>
 
-    <!-- ══════════════════════════════════════
-         대구 구역 경계 (단순화된 폴리곤)
-    ══════════════════════════════════════ -->
+    <!-- 구역 -->
+    <polygon points="520,220 590,200 640,240 630,310 570,330 510,310 490,270"
+      fill="rgba(99,102,241,0.1)" stroke="rgba(99,102,241,0.3)" stroke-width="1.5"/>
+    <text x="568" y="268" text-anchor="middle" fill="rgba(165,180,252,0.4)" font-size="13" font-weight="800" font-family="Noto Sans KR">중구</text>
 
-    <!-- 중구 -->
-    <polygon points="520,220 590,200 640,240 630,310 570,330 510,310 490,270" 
-             fill="rgba(37,99,235,0.08)" stroke="rgba(37,99,235,0.25)" stroke-width="1.5"
-             class="district-zone" data-district="jung"/>
-    <text x="570" y="268" text-anchor="middle" fill="rgba(148,163,184,0.5)" font-size="13" font-weight="700" font-family="Noto Sans KR">중구</text>
-
-    <!-- 동구 -->
     <polygon points="640,150 780,130 850,200 840,320 760,360 680,340 640,310 630,240"
-             fill="rgba(16,185,129,0.07)" stroke="rgba(16,185,129,0.2)" stroke-width="1.5"
-             class="district-zone" data-district="dong"/>
-    <text x="740" y="250" text-anchor="middle" fill="rgba(148,163,184,0.5)" font-size="13" font-weight="700" font-family="Noto Sans KR">동구</text>
+      fill="rgba(16,185,129,0.08)" stroke="rgba(16,185,129,0.25)" stroke-width="1.5"/>
+    <text x="740" y="248" text-anchor="middle" fill="rgba(110,231,183,0.4)" font-size="13" font-weight="800" font-family="Noto Sans KR">동구</text>
 
-    <!-- 서구 -->
     <polygon points="380,220 490,200 510,270 490,340 430,360 360,320 350,260"
-             fill="rgba(245,158,11,0.07)" stroke="rgba(245,158,11,0.2)" stroke-width="1.5"
-             class="district-zone" data-district="seo"/>
-    <text x="430" y="285" text-anchor="middle" fill="rgba(148,163,184,0.5)" font-size="13" font-weight="700" font-family="Noto Sans KR">서구</text>
+      fill="rgba(245,158,11,0.08)" stroke="rgba(245,158,11,0.25)" stroke-width="1.5"/>
+    <text x="424" y="282" text-anchor="middle" fill="rgba(253,211,77,0.4)" font-size="13" font-weight="800" font-family="Noto Sans KR">서구</text>
 
-    <!-- 북구 -->
     <polygon points="420,80 640,60 660,160 640,200 590,200 520,220 490,200 430,190 390,150"
-             fill="rgba(168,85,247,0.07)" stroke="rgba(168,85,247,0.2)" stroke-width="1.5"
-             class="district-zone" data-district="buk"/>
-    <text x="540" y="145" text-anchor="middle" fill="rgba(148,163,184,0.5)" font-size="13" font-weight="700" font-family="Noto Sans KR">북구</text>
+      fill="rgba(168,85,247,0.08)" stroke="rgba(168,85,247,0.25)" stroke-width="1.5"/>
+    <text x="538" y="143" text-anchor="middle" fill="rgba(216,180,254,0.4)" font-size="13" font-weight="800" font-family="Noto Sans KR">북구</text>
 
-    <!-- 남구 -->
     <polygon points="510,310 570,330 630,310 640,380 600,430 530,440 480,400 480,350"
-             fill="rgba(236,72,153,0.07)" stroke="rgba(236,72,153,0.2)" stroke-width="1.5"
-             class="district-zone" data-district="nam"/>
-    <text x="560" y="385" text-anchor="middle" fill="rgba(148,163,184,0.5)" font-size="13" font-weight="700" font-family="Noto Sans KR">남구</text>
+      fill="rgba(236,72,153,0.08)" stroke="rgba(236,72,153,0.25)" stroke-width="1.5"/>
+    <text x="556" y="386" text-anchor="middle" fill="rgba(249,168,212,0.4)" font-size="13" font-weight="800" font-family="Noto Sans KR">남구</text>
 
-    <!-- 수성구 -->
     <polygon points="630,310 760,360 840,320 870,400 840,480 760,520 680,510 620,480 600,430 640,380"
-             fill="rgba(59,130,246,0.1)" stroke="rgba(59,130,246,0.3)" stroke-width="2"
-             class="district-zone" data-district="suseong"/>
-    <text x="740" y="430" text-anchor="middle" fill="rgba(148,163,184,0.5)" font-size="13" font-weight="700" font-family="Noto Sans KR">수성구</text>
+      fill="rgba(59,130,246,0.13)" stroke="rgba(59,130,246,0.4)" stroke-width="2"/>
+    <text x="745" y="430" text-anchor="middle" fill="rgba(147,197,253,0.4)" font-size="13" font-weight="800" font-family="Noto Sans KR">수성구</text>
 
-    <!-- 달서구 -->
     <polygon points="350,320 480,340 530,440 510,520 440,560 340,540 280,460 290,370"
-             fill="rgba(251,146,60,0.07)" stroke="rgba(251,146,60,0.2)" stroke-width="1.5"
-             class="district-zone" data-district="dalseo"/>
-    <text x="400" y="450" text-anchor="middle" fill="rgba(148,163,184,0.5)" font-size="13" font-weight="700" font-family="Noto Sans KR">달서구</text>
+      fill="rgba(251,146,60,0.08)" stroke="rgba(251,146,60,0.25)" stroke-width="1.5"/>
+    <text x="400" y="447" text-anchor="middle" fill="rgba(253,186,116,0.4)" font-size="13" font-weight="800" font-family="Noto Sans KR">달서구</text>
 
-    <!-- 달성군 -->
     <polygon points="180,400 290,370 340,540 440,560 510,520 530,600 480,660 360,680 230,650 140,560 120,470"
-             fill="rgba(20,184,166,0.07)" stroke="rgba(20,184,166,0.2)" stroke-width="1.5"
-             class="district-zone" data-district="dalseong"/>
-    <text x="310" y="600" text-anchor="middle" fill="rgba(148,163,184,0.5)" font-size="13" font-weight="700" font-family="Noto Sans KR">달성군</text>
+      fill="rgba(20,184,166,0.07)" stroke="rgba(20,184,166,0.22)" stroke-width="1.5"/>
+    <text x="315" y="596" text-anchor="middle" fill="rgba(94,234,212,0.38)" font-size="13" font-weight="800" font-family="Noto Sans KR">달성군</text>
 
-    <!-- ══════════════════════════════════════
-         도로망 (주요 도로)
-    ══════════════════════════════════════ -->
-    <g stroke="rgba(71,85,105,0.4)" stroke-width="1" fill="none">
-      <!-- 동서 간선 -->
-      <line x1="150" y1="300" x2="900" y2="300"/>
-      <line x1="150" y1="380" x2="900" y2="380"/>
+    <!-- 도로 -->
+    <g stroke="rgba(71,85,105,0.32)" stroke-width="1.2" fill="none">
+      <line x1="150" y1="300" x2="920" y2="300"/>
+      <line x1="150" y1="380" x2="920" y2="380"/>
       <line x1="200" y1="460" x2="900" y2="460"/>
-      <!-- 남북 간선 -->
-      <line x1="420" y1="60" x2="420" y2="680"/>
-      <line x1="580" y1="60" x2="580" y2="680"/>
+      <line x1="420" y1="60"  x2="420" y2="680"/>
+      <line x1="580" y1="60"  x2="580" y2="680"/>
       <line x1="700" y1="130" x2="700" y2="580"/>
       <line x1="300" y1="200" x2="300" y2="680"/>
-      <!-- 사선 도로 -->
       <line x1="490" y1="200" x2="640" y2="380"/>
       <line x1="630" y1="240" x2="840" y2="320"/>
     </g>
 
-    <!-- ══════════════════════════════════════
-         하천 (신천, 금호강)
-    ══════════════════════════════════════ -->
-    <path d="M 600 80 Q 610 180 600 280 Q 590 360 580 440 Q 570 520 560 620"
-          fill="none" stroke="rgba(56,189,248,0.35)" stroke-width="5" stroke-linecap="round"/>
-    <text x="622" y="200" fill="rgba(56,189,248,0.5)" font-size="10" font-family="Noto Sans KR" transform="rotate(85,622,200)">신천</text>
+    <!-- 하천 -->
+    <path d="M600 80 Q612 180 600 280 Q588 360 580 440 Q572 520 562 620"
+      fill="none" stroke="rgba(56,189,248,0.3)" stroke-width="5" stroke-linecap="round"/>
+    <text x="624" y="195" fill="rgba(56,189,248,0.42)" font-size="10" font-family="Noto Sans KR" transform="rotate(86,624,195)">신천</text>
+    <path d="M150 220 Q300 200 450 210 Q560 215 640 200 Q720 185 850 190"
+      fill="none" stroke="rgba(56,189,248,0.25)" stroke-width="3.5" stroke-linecap="round"/>
+    <text x="490" y="196" fill="rgba(56,189,248,0.35)" font-size="10" font-family="Noto Sans KR">금호강</text>
 
-    <path d="M 150 220 Q 300 200 450 210 Q 560 215 640 200 Q 720 185 850 190"
-          fill="none" stroke="rgba(56,189,248,0.3)" stroke-width="4" stroke-linecap="round"/>
-    <text x="480" y="198" fill="rgba(56,189,248,0.4)" font-size="10" font-family="Noto Sans KR">금호강</text>
+    <!-- 마커 그룹 -->
+    <g id="mg"></g>
 
-    <!-- ══════════════════════════════════════
-         아파트 마커 그룹
-    ══════════════════════════════════════ -->
-    <g id="markers-group"></g>
-
-    <!-- 동서남북 나침반 -->
-    <g transform="translate(1140,700)">
-      <circle r="20" fill="rgba(15,23,42,0.8)" stroke="rgba(37,99,235,0.3)" stroke-width="1"/>
-      <text y="-6" text-anchor="middle" fill="#60a5fa" font-size="9" font-weight="700" font-family="Noto Sans KR">N</text>
-      <line x1="0" y1="-14" x2="0" y2="14" stroke="rgba(37,99,235,0.4)" stroke-width="0.5"/>
-      <line x1="-14" y1="0" x2="14" y2="0" stroke="rgba(37,99,235,0.4)" stroke-width="0.5"/>
-      <polygon points="0,-14 -4,-4 0,-8 4,-4" fill="#2563eb"/>
+    <!-- 나침반 -->
+    <g transform="translate(1155,710)">
+      <circle r="17" fill="rgba(12,21,37,0.85)" stroke="rgba(59,130,246,0.28)" stroke-width="1"/>
+      <text y="-4" text-anchor="middle" fill="#60a5fa" font-size="9" font-weight="700" font-family="Noto Sans KR">N</text>
+      <line x1="0" y1="-12" x2="0" y2="12" stroke="rgba(59,130,246,0.35)" stroke-width="0.5"/>
+      <line x1="-12" y1="0" x2="12" y2="0" stroke="rgba(59,130,246,0.35)" stroke-width="0.5"/>
+      <polygon points="0,-12 -3,-3 0,-6 3,-3" fill="#3b82f6"/>
     </g>
-
-    <!-- 스케일 바 -->
-    <g transform="translate(30,720)">
-      <line x1="0" y1="0" x2="80" y2="0" stroke="#64748b" stroke-width="2"/>
-      <line x1="0" y1="-4" x2="0" y2="4" stroke="#64748b" stroke-width="2"/>
-      <line x1="80" y1="-4" x2="80" y2="4" stroke="#64748b" stroke-width="2"/>
-      <text x="40" y="-7" text-anchor="middle" fill="#64748b" font-size="9" font-family="Noto Sans KR">5km</text>
+    <!-- 스케일바 -->
+    <g transform="translate(26,726)">
+      <rect x="0" y="-6" width="70" height="12" rx="3" fill="rgba(12,21,37,0.7)"/>
+      <line x1="4" y1="0" x2="66" y2="0" stroke="#475569" stroke-width="1.5"/>
+      <line x1="4" y1="-3" x2="4" y2="3" stroke="#475569" stroke-width="1.5"/>
+      <line x1="66" y1="-3" x2="66" y2="3" stroke="#475569" stroke-width="1.5"/>
+      <text x="35" y="-8" text-anchor="middle" fill="#475569" font-size="9" font-family="Noto Sans KR">5 km</text>
     </g>
   </svg>
+</div>
 
-  <!-- 줌 컨트롤 -->
-  <div id="zoom-controls">
-    <button class="zoom-btn" onclick="zoomIn()">+</button>
-    <button class="zoom-btn" onclick="zoomOut()">−</button>
-    <button class="zoom-btn" onclick="resetView()" title="초기화" style="font-size:14px">⌂</button>
+<!-- 줌 버튼 -->
+<div id="zbtn">
+  <button class="zb" onclick="zoomIn()">+</button>
+  <button class="zb" onclick="zoomOut()">−</button>
+  <button class="zb" onclick="resetView()" style="font-size:15px">⌂</button>
+</div>
+
+<!-- 범례 -->
+<div id="legend">
+  <h4>범례</h4>
+  <div class="lr"><div class="ld" style="background:#3b82f6"></div>일반 아파트</div>
+  <div class="lr"><div class="ld" style="background:#ec4899"></div>재건축 추진</div>
+  <div class="lr"><div class="ld" style="background:#10b981"></div>재개발 구역</div>
+  <div class="lr"><div class="ld" style="background:#334155;border:1px solid #475569"></div>경매 물건</div>
+  <div class="lr"><div class="ld" style="background:#f59e0b"></div>상가 경매</div>
+</div>
+
+<!-- 필터 FAB -->
+<button id="ftoggle" onclick="toggleDrawer()">☰</button>
+
+<!-- 하단 드로어 -->
+<div id="drawer">
+  <div class="dhandle"></div>
+  <div class="fsec">
+    <div class="ftitle">표시 항목</div>
+    <div class="chips">
+      <button class="chip active" onclick="toggleFilter(this,'apt')"><span class="cdot" style="background:#3b82f6"></span>아파트</button>
+      <button class="chip active" onclick="toggleFilter(this,'reconstruction')"><span class="cdot" style="background:#ec4899"></span>재건축</button>
+      <button class="chip active" onclick="toggleFilter(this,'auction')"><span class="cdot" style="background:#64748b"></span>경매</button>
+      <button class="chip active" onclick="toggleFilter(this,'commercial')"><span class="cdot" style="background:#10b981"></span>상가</button>
+    </div>
   </div>
-
-  <!-- 범례 -->
-  <div id="legend">
-    <h4>범례</h4>
-    <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div>일반 아파트</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#ec4899"></div>재건축 추진</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#0d9488"></div>재개발 구역</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#1e293b;border:1px solid #475569"></div>경매 물건</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>상가 경매</div>
+  <div class="fsec">
+    <div class="ftitle">가격 필터</div>
+    <div class="chips">
+      <button class="chip active" onclick="setPrice(this,'all')">전체</button>
+      <button class="chip" onclick="setPrice(this,'under5')">~5억</button>
+      <button class="chip" onclick="setPrice(this,'5to10')">5~10억</button>
+      <button class="chip" onclick="setPrice(this,'over10')">10억+</button>
+    </div>
   </div>
-
-  <!-- 툴팁 -->
-  <div id="tooltip">
-    <h3 id="tt-name"></h3>
-    <div class="t-row"><span>위치</span><span class="t-val" id="tt-loc"></span></div>
-    <div class="t-row"><span>세대수</span><span class="t-val" id="tt-units"></span></div>
-    <div class="t-row"><span>최근 거래</span><span class="t-price" id="tt-price"></span></div>
-    <div class="t-row"><span>유형</span><span class="t-val" id="tt-type"></span></div>
+  <div class="fsec">
+    <div class="ftitle">세대수</div>
+    <div class="chips">
+      <button class="chip active" onclick="setUnits(this,0)">전체</button>
+      <button class="chip" onclick="setUnits(this,100)">100세대+</button>
+      <button class="chip" onclick="setUnits(this,300)">300세대+</button>
+      <button class="chip" onclick="setUnits(this,500)">500세대+</button>
+    </div>
   </div>
+</div>
 
+<!-- 정보 카드 -->
+<div id="icard">
+  <button class="xbtn" onclick="document.getElementById('icard').style.display='none'">✕</button>
+  <h3 id="ic-name"></h3>
+  <div class="irow"><span>위치</span><span class="ival" id="ic-loc"></span></div>
+  <div class="irow"><span>세대수</span><span class="ival" id="ic-units"></span></div>
+  <div class="irow"><span>최근 거래</span><span class="ipr" id="ic-price"></span></div>
+  <div class="irow"><span>유형</span><span class="ibadge" id="ic-type"></span></div>
 </div>
 
 <script>
-// ══════════════════════════════════════
-// 데이터: 대구 전 지역 주요 아파트 단지
-// ══════════════════════════════════════
+// ─── 데이터 ───
 const DATA = [
-  // ── 수성구 황금동 (이미지 기반) ──
-  {id:1, name:'힐스테이트', loc:'수성구 황금동', units:750, price:'18.5억', priceVal:185000, type:'apt', district:'suseong', x:700, y:430, status:''},
-  {id:2, name:'유림노르웨이', loc:'수성구 황금동', units:576, price:'12.3억', priceVal:123000, type:'apt', district:'suseong', x:750, y:370, status:''},
-  {id:3, name:'에일린의뜰', loc:'수성구 황금동', units:719, price:'14.2억', priceVal:142000, type:'apt', district:'suseong', x:660, y:380, status:''},
-  {id:4, name:'동일하이빌', loc:'수성구 황금동', units:228, price:'8.5억', priceVal:85000, type:'apt', district:'suseong', x:695, y:340, status:''},
-  {id:5, name:'태양유성하이', loc:'수성구 황금동', units:277, price:'9.1억', priceVal:91000, type:'apt', district:'suseong', x:668, y:355, status:''},
-  {id:6, name:'범어아이파크', loc:'수성구 범어동', units:418, price:'16.7억', priceVal:167000, type:'apt', district:'suseong', x:720, y:390, status:''},
-  {id:7, name:'범어2차아이', loc:'수성구 범어동', units:490, price:'15.2억', priceVal:152000, type:'apt', district:'suseong', x:745, y:405, status:''},
-  {id:8, name:'청구푸른마을', loc:'수성구 황금동', units:378, price:'7.8억', priceVal:78000, type:'apt', district:'suseong', x:680, y:400, status:''},
-  {id:9, name:'청구가든1', loc:'수성구 범어동', units:220, price:'9.8억', priceVal:98000, type:'apt', district:'suseong', x:800, y:335, status:''},
-  {id:10, name:'서한두레', loc:'수성구 범어동', units:156, price:'7.2억', priceVal:72000, type:'apt', district:'suseong', x:820, y:355, status:''},
-  {id:11, name:'을지맨션', loc:'수성구 범어동', units:213, price:'6.5억', priceVal:65000, type:'apt', district:'suseong', x:840, y:380, status:''},
-  {id:12, name:'장원', loc:'수성구 범어동', units:455, price:'10.5억', priceVal:105000, type:'apt', district:'suseong', x:860, y:400, status:''},
-  {id:13, name:'태양아너스', loc:'수성구 범어동', units:480, price:'13.2억', priceVal:132000, type:'apt', district:'suseong', x:835, y:460, status:''},
-  {id:14, name:'가든하이츠2', loc:'수성구 범어동', units:106, price:'8.9억', priceVal:89000, type:'apt', district:'suseong', x:855, y:440, status:''},
-  {id:15, name:'우방2', loc:'수성구 달산동', units:535, price:'11.3억', priceVal:113000, type:'apt', district:'suseong', x:865, y:490, status:''},
-  {id:16, name:'경남타운', loc:'수성구 범어동', units:250, price:'6.8억', priceVal:68000, type:'apt', district:'suseong', x:845, y:365, status:''},
-  {id:17, name:'라온프라이빗', loc:'수성구 황금동', units:175, price:'22.0억', priceVal:220000, type:'apt', district:'suseong', x:672, y:328, status:''},
-  {id:18, name:'센트레빌', loc:'수성구 범어동', units:88, price:'13.8억', priceVal:138000, type:'apt', district:'suseong', x:860, y:318, status:''},
-  {id:19, name:'범어진', loc:'수성구 범어동', units:169, price:'8.3억', priceVal:83000, type:'apt', district:'suseong', x:730, y:415, status:'조합설립인가'},
-
-  // 재건축
-  {id:20, name:'재건축 을지맨션', loc:'수성구 범어동', units:213, price:'', priceVal:0, type:'reconstruction', district:'suseong', x:848, y:393, status:'사업시행인가'},
-  {id:21, name:'재건축 엘리시온', loc:'수성구 범어동', units:300, price:'', priceVal:0, type:'reconstruction', district:'suseong', x:863, y:303, status:'정비구역지정'},
-  {id:22, name:'재건축 가든하이츠3', loc:'수성구 범어동', units:282, price:'', priceVal:0, type:'reconstruction', district:'suseong', x:862, y:422, status:'정비예정'},
-  {id:23, name:'재건축 수성 우방타', loc:'달성군', units:535, price:'', priceVal:0, type:'reconstruction', district:'dalseong', x:860, y:508, status:'사업시행'},
-
-  // 경매
-  {id:24, name:'경매 단독주택', loc:'수성구 황금동', units:1, price:'2.2억', priceVal:22000, type:'auction', district:'suseong', x:640, y:340, status:'15평↓66%'},
-  {id:25, name:'경매 상가', loc:'수성구 황금동', units:1, price:'85.5억', priceVal:855000, type:'auction', district:'suseong', x:645, y:460, status:'1231평↓30%'},
-  {id:26, name:'경매 미쉐린타이어', loc:'수성구 황금동', units:1, price:'16억', priceVal:160000, type:'auction', district:'suseong', x:632, y:470, status:'163평↓51%'},
-  {id:27, name:'경매 상가 힐스', loc:'수성구 황금동', units:1, price:'20.8억', priceVal:208000, type:'auction', district:'suseong', x:655, y:445, status:'52평'},
-  {id:28, name:'경매 오벨리스크', loc:'수성구 황금동', units:76, price:'4.1억', priceVal:41000, type:'auction', district:'suseong', x:668, y:430, status:'41평↓51%'},
-  {id:29, name:'경매 범어', loc:'수성구 범어동', units:1, price:'10억', priceVal:100000, type:'auction', district:'suseong', x:840, y:475, status:'29평'},
-  {id:30, name:'경매 단독주택2', loc:'수성구 황금동', units:1, price:'11.4억', priceVal:114000, type:'auction', district:'suseong', x:638, y:480, status:'139평↓30%'},
-  {id:31, name:'경매 다가구', loc:'수성구 황금동', units:1, price:'12.9억', priceVal:129000, type:'auction', district:'suseong', x:636, y:492, status:'119평'},
-
-  // ── 중구 ──
-  {id:40, name:'중앙하이츠', loc:'중구 남산동', units:320, price:'9.5억', priceVal:95000, type:'apt', district:'jung', x:555, y:265},
-  {id:41, name:'대봉삼성래미안', loc:'중구 대봉동', units:480, price:'12.1억', priceVal:121000, type:'apt', district:'jung', x:575, y:280},
-  {id:42, name:'청구아이파크', loc:'중구 남산동', units:542, price:'11.8억', priceVal:118000, type:'apt', district:'jung', x:540, y:275},
-  {id:43, name:'수성롯데캐슬', loc:'중구 동인동', units:680, price:'13.4억', priceVal:134000, type:'apt', district:'jung', x:560, y:250},
-
-  // ── 동구 ──
-  {id:50, name:'동구아이파크', loc:'동구 신천동', units:845, price:'7.2억', priceVal:72000, type:'apt', district:'dong', x:710, y:230},
-  {id:51, name:'신서혁신도시', loc:'동구 신서동', units:1200, price:'5.8억', priceVal:58000, type:'apt', district:'dong', x:780, y:200},
-  {id:52, name:'반야월SK뷰', loc:'동구 반야월동', units:520, price:'4.5억', priceVal:45000, type:'apt', district:'dong', x:810, y:250},
-  {id:53, name:'혁신도시롯데', loc:'동구 신서동', units:980, price:'6.1억', priceVal:61000, type:'apt', district:'dong', x:760, y:175},
-  {id:54, name:'e편한세상동구', loc:'동구 각산동', units:640, price:'5.3억', priceVal:53000, type:'apt', district:'dong', x:750, y:310},
-
-  // ── 서구 ──
-  {id:60, name:'이현두산위브', loc:'서구 이현동', units:420, price:'5.9억', priceVal:59000, type:'apt', district:'seo', x:425, y:275},
-  {id:61, name:'평리주공재건축', loc:'서구 평리동', units:890, price:'', priceVal:0, type:'reconstruction', district:'seo', x:405, y:295},
-  {id:62, name:'원대파크맨션', loc:'서구 원대동', units:310, price:'4.8억', priceVal:48000, type:'apt', district:'seo', x:445, y:260},
-  {id:63, name:'서대구역더샵', loc:'서구 비산동', units:730, price:'6.7억', priceVal:67000, type:'apt', district:'seo', x:415, y:310},
-
-  // ── 북구 ──
-  {id:70, name:'칠성파크자이', loc:'북구 칠성동', units:680, price:'7.1억', priceVal:71000, type:'apt', district:'buk', x:550, y:155},
-  {id:71, name:'국우동금강', loc:'북구 국우동', units:450, price:'5.2억', priceVal:52000, type:'apt', district:'buk', x:480, y:135},
-  {id:72, name:'읍내동두산', loc:'북구 읍내동', units:580, price:'6.3억', priceVal:63000, type:'apt', district:'buk', x:510, y:120},
-  {id:73, name:'연경e편한', loc:'북구 연경동', units:1100, price:'5.7억', priceVal:57000, type:'apt', district:'buk', x:600, y:125},
-  {id:74, name:'태전동SK뷰', loc:'북구 태전동', units:750, price:'6.8억', priceVal:68000, type:'apt', district:'buk', x:460, y:150},
-  {id:75, name:'구암동포스코', loc:'북구 구암동', units:480, price:'5.5억', priceVal:55000, type:'apt', district:'buk', x:535, y:180},
-
-  // ── 남구 ──
-  {id:80, name:'대명자이', loc:'남구 대명동', units:720, price:'8.2억', priceVal:82000, type:'apt', district:'nam', x:553, y:375},
-  {id:81, name:'봉덕현대', loc:'남구 봉덕동', units:340, price:'7.5억', priceVal:75000, type:'apt', district:'nam', x:572, y:390},
-  {id:82, name:'이천동두산', loc:'남구 이천동', units:460, price:'6.9억', priceVal:69000, type:'apt', district:'nam', x:540, y:400},
-  {id:83, name:'남산아이파크', loc:'남구 대명동', units:830, price:'9.1억', priceVal:91000, type:'apt', district:'nam', x:560, y:415},
-
-  // ── 달서구 ──
-  {id:90, name:'월성동롯데', loc:'달서구 월성동', units:960, price:'5.4억', priceVal:54000, type:'apt', district:'dalseo', x:395, y:430},
-  {id:91, name:'상인더샵', loc:'달서구 상인동', units:1250, price:'7.8억', priceVal:78000, type:'apt', district:'dalseo', x:430, y:460},
-  {id:92, name:'성당동래미안', loc:'달서구 성당동', units:580, price:'9.2억', priceVal:92000, type:'apt', district:'dalseo', x:450, y:415},
-  {id:93, name:'감삼자이', loc:'달서구 감삼동', units:780, price:'8.6억', priceVal:86000, type:'apt', district:'dalseo', x:420, y:395},
-  {id:94, name:'용산동e편한', loc:'달서구 용산동', units:640, price:'6.2억', priceVal:62000, type:'apt', district:'dalseo', x:360, y:460},
-  {id:95, name:'월배역더샵', loc:'달서구 월배동', units:890, price:'7.1억', priceVal:71000, type:'apt', district:'dalseo', x:408, y:490},
-  {id:96, name:'두류공원자이', loc:'달서구 두류동', units:720, price:'10.3억', priceVal:103000, type:'apt', district:'dalseo', x:467, y:388},
-  {id:97, name:'재건축진천', loc:'달서구 진천동', units:420, price:'', priceVal:0, type:'reconstruction', district:'dalseo', x:370, y:500},
-
-  // ── 달성군 ──
-  {id:100, name:'다사이진캐슬', loc:'달성군 다사읍', units:680, price:'4.8억', priceVal:48000, type:'apt', district:'dalseong', x:250, y:490},
-  {id:101, name:'현풍SK뷰', loc:'달성군 현풍읍', units:1200, price:'3.9억', priceVal:39000, type:'apt', district:'dalseong', x:300, y:580},
-  {id:102, name:'테크노폴리스', loc:'달성군 현풍읍', units:2500, price:'4.5억', priceVal:45000, type:'apt', district:'dalseong', x:340, y:600},
-  {id:103, name:'화원자이', loc:'달성군 화원읍', units:850, price:'5.1억', priceVal:51000, type:'apt', district:'dalseong', x:230, y:550},
-  {id:104, name:'논공e편한', loc:'달성군 논공읍', units:480, price:'3.2억', priceVal:32000, type:'apt', district:'dalseong', x:280, y:620},
-  {id:105, name:'옥포두산', loc:'달성군 옥포읍', units:380, price:'3.6억', priceVal:36000, type:'apt', district:'dalseong', x:200, y:600},
+  // 수성구 황금동/범어동
+  {id:1,  name:'힐스테이트',   loc:'수성구 황금동', units:750, price:'18.5억', pv:185000, type:'apt', d:'suseong', x:700,y:430},
+  {id:2,  name:'유림노르웨이', loc:'수성구 황금동', units:576, price:'12.3억', pv:123000, type:'apt', d:'suseong', x:755,y:370},
+  {id:3,  name:'에일린의뜰',   loc:'수성구 황금동', units:719, price:'14.2억', pv:142000, type:'apt', d:'suseong', x:658,y:382},
+  {id:4,  name:'동일하이빌',   loc:'수성구 황금동', units:228, price:'8.5억',  pv:85000,  type:'apt', d:'suseong', x:698,y:342},
+  {id:5,  name:'태양유성하이', loc:'수성구 황금동', units:277, price:'9.1억',  pv:91000,  type:'apt', d:'suseong', x:668,y:356},
+  {id:6,  name:'범어아이파크', loc:'수성구 범어동', units:418, price:'16.7억', pv:167000, type:'apt', d:'suseong', x:720,y:393},
+  {id:7,  name:'범어2차아이',  loc:'수성구 범어동', units:490, price:'15.2억', pv:152000, type:'apt', d:'suseong', x:748,y:408},
+  {id:8,  name:'청구푸른마을', loc:'수성구 황금동', units:378, price:'7.8억',  pv:78000,  type:'apt', d:'suseong', x:682,y:402},
+  {id:9,  name:'청구가든1',    loc:'수성구 범어동', units:220, price:'9.8억',  pv:98000,  type:'apt', d:'suseong', x:803,y:337},
+  {id:10, name:'서한두레',     loc:'수성구 범어동', units:156, price:'7.2억',  pv:72000,  type:'apt', d:'suseong', x:823,y:357},
+  {id:11, name:'을지맨션',     loc:'수성구 범어동', units:213, price:'6.5억',  pv:65000,  type:'apt', d:'suseong', x:840,y:380},
+  {id:12, name:'장원',         loc:'수성구 범어동', units:455, price:'10.5억', pv:105000, type:'apt', d:'suseong', x:863,y:400},
+  {id:13, name:'태양아너스',   loc:'수성구 범어동', units:480, price:'13.2억', pv:132000, type:'apt', d:'suseong', x:836,y:463},
+  {id:14, name:'가든하이츠2',  loc:'수성구 범어동', units:106, price:'8.9억',  pv:89000,  type:'apt', d:'suseong', x:856,y:443},
+  {id:15, name:'우방2',        loc:'수성구 달산동', units:535, price:'11.3억', pv:113000, type:'apt', d:'suseong', x:868,y:492},
+  {id:16, name:'경남타운',     loc:'수성구 범어동', units:250, price:'6.8억',  pv:68000,  type:'apt', d:'suseong', x:847,y:365},
+  {id:17, name:'라온프라이빗', loc:'수성구 황금동', units:175, price:'22억',   pv:220000, type:'apt', d:'suseong', x:673,y:330},
+  {id:18, name:'센트레빌',     loc:'수성구 범어동', units:88,  price:'13.8억', pv:138000, type:'apt', d:'suseong', x:860,y:320},
+  {id:19, name:'범어진',       loc:'수성구 범어동', units:169, price:'8.3억',  pv:83000,  type:'apt', d:'suseong', x:730,y:418, status:'조합설립인가'},
+  {id:20, name:'재건축 을지',  loc:'수성구 범어동', units:213, price:'',       pv:0,      type:'reconstruction', d:'suseong', x:849,y:394, status:'사업시행인가'},
+  {id:21, name:'재건축 엘리시온',loc:'수성구 범어동',units:300,price:'',       pv:0,      type:'reconstruction', d:'suseong', x:864,y:306, status:'정비구역지정'},
+  {id:22, name:'재건축 가든3', loc:'수성구 범어동', units:282, price:'',       pv:0,      type:'reconstruction', d:'suseong', x:862,y:424, status:'정비예정'},
+  {id:23, name:'경매 단독주택',loc:'수성구 황금동', units:1,   price:'2.2억',  pv:22000,  type:'auction', d:'suseong', x:640,y:342, status:'15평↓66%'},
+  {id:24, name:'상가 경매',    loc:'수성구 황금동', units:1,   price:'85.5억', pv:855000, type:'auction', d:'suseong', x:645,y:462, status:'1231평↓30%'},
+  {id:25, name:'경매 오벨리스크',loc:'수성구 황금동',units:76, price:'4.1억',  pv:41000,  type:'auction', d:'suseong', x:668,y:432, status:'41평↓51%'},
+  {id:26, name:'상가 힐스',    loc:'수성구 황금동', units:1,   price:'20.8억', pv:208000, type:'auction', d:'suseong', x:655,y:447, status:'52평'},
+  {id:27, name:'경매 범어',    loc:'수성구 범어동', units:1,   price:'10억',   pv:100000, type:'auction', d:'suseong', x:840,y:476, status:'29평'},
+  // 중구
+  {id:30, name:'대봉래미안',   loc:'중구 대봉동',  units:480, price:'12.1억', pv:121000, type:'apt', d:'jung', x:575,y:278},
+  {id:31, name:'청구아이파크', loc:'중구 남산동',  units:542, price:'11.8억', pv:118000, type:'apt', d:'jung', x:540,y:272},
+  {id:32, name:'수성롯데캐슬', loc:'중구 동인동',  units:680, price:'13.4억', pv:134000, type:'apt', d:'jung', x:558,y:252},
+  // 동구
+  {id:40, name:'혁신도시롯데', loc:'동구 신서동',  units:980, price:'6.1억',  pv:61000,  type:'apt', d:'dong', x:762,y:175},
+  {id:41, name:'신서SK뷰',     loc:'동구 신서동',  units:1200,price:'5.8억',  pv:58000,  type:'apt', d:'dong', x:782,y:200},
+  {id:42, name:'반야월두산',   loc:'동구 반야월',  units:520, price:'4.5억',  pv:45000,  type:'apt', d:'dong', x:812,y:252},
+  {id:43, name:'e편한동구',    loc:'동구 각산동',  units:640, price:'5.3억',  pv:53000,  type:'apt', d:'dong', x:750,y:312},
+  // 서구
+  {id:50, name:'이현두산위브', loc:'서구 이현동',  units:420, price:'5.9억',  pv:59000,  type:'apt', d:'seo', x:425,y:274},
+  {id:51, name:'서대구역더샵', loc:'서구 비산동',  units:730, price:'6.7억',  pv:67000,  type:'apt', d:'seo', x:413,y:312},
+  {id:52, name:'평리재건축',   loc:'서구 평리동',  units:890, price:'',       pv:0,      type:'reconstruction', d:'seo', x:404,y:294, status:'조합설립'},
+  // 북구
+  {id:60, name:'칠성파크자이', loc:'북구 칠성동',  units:680, price:'7.1억',  pv:71000,  type:'apt', d:'buk', x:550,y:157},
+  {id:61, name:'연경e편한',    loc:'북구 연경동',  units:1100,price:'5.7억',  pv:57000,  type:'apt', d:'buk', x:602,y:127},
+  {id:62, name:'태전SK뷰',     loc:'북구 태전동',  units:750, price:'6.8억',  pv:68000,  type:'apt', d:'buk', x:460,y:152},
+  {id:63, name:'구암포스코',   loc:'북구 구암동',  units:480, price:'5.5억',  pv:55000,  type:'apt', d:'buk', x:535,y:182},
+  // 남구
+  {id:70, name:'대명자이',     loc:'남구 대명동',  units:720, price:'8.2억',  pv:82000,  type:'apt', d:'nam', x:553,y:377},
+  {id:71, name:'봉덕현대',     loc:'남구 봉덕동',  units:340, price:'7.5억',  pv:75000,  type:'apt', d:'nam', x:572,y:393},
+  {id:72, name:'남산아이파크', loc:'남구 대명동',  units:830, price:'9.1억',  pv:91000,  type:'apt', d:'nam', x:558,y:417},
+  // 달서구
+  {id:80, name:'월성롯데',     loc:'달서구 월성동',units:960, price:'5.4억',  pv:54000,  type:'apt', d:'dalseo', x:395,y:432},
+  {id:81, name:'상인더샵',     loc:'달서구 상인동',units:1250,price:'7.8억',  pv:78000,  type:'apt', d:'dalseo', x:430,y:462},
+  {id:82, name:'감삼자이',     loc:'달서구 감삼동',units:780, price:'8.6억',  pv:86000,  type:'apt', d:'dalseo', x:420,y:395},
+  {id:83, name:'두류공원자이', loc:'달서구 두류동',units:720, price:'10.3억', pv:103000, type:'apt', d:'dalseo', x:467,y:388},
+  {id:84, name:'성당래미안',   loc:'달서구 성당동',units:580, price:'9.2억',  pv:92000,  type:'apt', d:'dalseo', x:450,y:416},
+  {id:85, name:'재건축진천',   loc:'달서구 진천동',units:420, price:'',       pv:0,      type:'reconstruction', d:'dalseo', x:370,y:502, status:'정비구역'},
+  // 달성군
+  {id:90, name:'다사이진캐슬', loc:'달성군 다사읍',units:680, price:'4.8억',  pv:48000,  type:'apt', d:'dalseong', x:252,y:492},
+  {id:91, name:'테크노폴리스', loc:'달성군 현풍읍',units:2500,price:'4.5억',  pv:45000,  type:'apt', d:'dalseong', x:342,y:602},
+  {id:92, name:'화원자이',     loc:'달성군 화원읍',units:850, price:'5.1억',  pv:51000,  type:'apt', d:'dalseong', x:232,y:552},
+  {id:93, name:'현풍SK뷰',     loc:'달성군 현풍읍',units:1200,price:'3.9억',  pv:39000,  type:'apt', d:'dalseong', x:302,y:582},
 ];
 
-// ══════════════════════════════════════
-// 상태
-// ══════════════════════════════════════
-let scale = 1, tx = 0, ty = 0;
-let isDragging = false, startX, startY, startTx, startTy;
-let activeFilters = {apt:true, reconstruction:true, auction:true, commercial:true};
-let maxPrice = 999999, minUnits = 0;
-let focusedDistrict = 'all';
+// ─── 상태 ───
+let sc=1, tx=0, ty=0;
+let panning=false, px0,py0,ptx,pty;
+let pinching=false, pd0,ps0,pmx,pmy;
+let afilt={apt:true,reconstruction:true,auction:true,commercial:true};
+let priceMode='all', minUnits=0, distFocus='all', drawerOpen=false;
 
-const svg = document.getElementById('map');
-const markersGroup = document.getElementById('markers-group');
-const tooltip = document.getElementById('tooltip');
+const mapEl = document.getElementById('map');
+const mgEl  = document.getElementById('mg');
+const wrap  = document.getElementById('mwrap');
 
-// ══════════════════════════════════════
-// 마커 렌더링
-// ══════════════════════════════════════
-function getColor(type) {
-  return {apt:'#2563eb', reconstruction:'#ec4899', auction:'#1e293b', commercial:'#0d9488'}[type] || '#2563eb';
-}
-function getBorder(type) {
-  return {apt:'#60a5fa', reconstruction:'#f472b6', auction:'#64748b', commercial:'#2dd4bf'}[type] || '#60a5fa';
-}
-
-function renderMarkers() {
-  markersGroup.innerHTML = '';
-  let count = 0;
-
-  DATA.forEach(d => {
-    if (!activeFilters[d.type]) return;
-    if (d.priceVal > 0 && d.priceVal > maxPrice) return;
-    if (d.units > 1 && d.units < minUnits) return;
-    if (focusedDistrict !== 'all' && d.district !== focusedDistrict) return;
-
-    count++;
-    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
-    g.setAttribute('transform', `translate(${d.x},${d.y})`);
-    g.setAttribute('class', 'marker');
-    g.style.cursor = 'pointer';
-
-    const bg = getColor(d.type);
-    const bd = getBorder(d.type);
-    const w = Math.max(70, d.name.length * 9 + 20);
-    const h = d.price ? 42 : 30;
-
-    // 배경
-    const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
-    rect.setAttribute('x', -w/2); rect.setAttribute('y', -h/2);
-    rect.setAttribute('width', w); rect.setAttribute('height', h);
-    rect.setAttribute('rx', 6);
-    rect.setAttribute('fill', bg);
-    rect.setAttribute('stroke', bd); rect.setAttribute('stroke-width', '1.5');
-    rect.setAttribute('fill-opacity','0.92');
-    g.appendChild(rect);
-
-    // 이름
-    const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
-    txt.setAttribute('text-anchor','middle');
-    txt.setAttribute('y', d.price ? -6 : 4);
-    txt.setAttribute('class','apt-label');
-    txt.textContent = d.name;
-    g.appendChild(txt);
-
-    // 세대수
-    if(d.units > 1) {
-      const sub = document.createElementNS('http://www.w3.org/2000/svg','text');
-      sub.setAttribute('text-anchor','middle');
-      sub.setAttribute('y', d.price ? 8 : 15);
-      sub.setAttribute('class','apt-sub');
-      sub.textContent = d.units + '세대';
-      g.appendChild(sub);
-    }
-
-    // 가격
-    if(d.price) {
-      const pr = document.createElementNS('http://www.w3.org/2000/svg','text');
-      pr.setAttribute('text-anchor','middle');
-      pr.setAttribute('y', 20);
-      pr.setAttribute('class','apt-price');
-      pr.textContent = d.price;
-      g.appendChild(pr);
-    }
-
-    // 상태 뱃지
-    if(d.status) {
-      const sb = document.createElementNS('http://www.w3.org/2000/svg','g');
-      const sw = d.status.length * 8 + 10;
-      const sr = document.createElementNS('http://www.w3.org/2000/svg','rect');
-      sr.setAttribute('x', -sw/2); sr.setAttribute('y', h/2+2);
-      sr.setAttribute('width', sw); sr.setAttribute('height', 14);
-      sr.setAttribute('rx', 3);
-      sr.setAttribute('fill', d.type==='reconstruction' ? '#db2777' : '#0f172a');
-      sr.setAttribute('stroke', d.type==='reconstruction' ? '#f472b6' : '#475569');
-      sr.setAttribute('stroke-width','1');
-      sb.appendChild(sr);
-      const st = document.createElementNS('http://www.w3.org/2000/svg','text');
-      st.setAttribute('text-anchor','middle'); st.setAttribute('y', h/2+12);
-      st.setAttribute('font-family','Noto Sans KR'); st.setAttribute('font-size','8');
-      st.setAttribute('fill', d.type==='reconstruction' ? '#fce7f3' : '#94a3b8');
-      st.setAttribute('font-weight','700');
-      st.textContent = d.status;
-      sb.appendChild(st);
-      g.appendChild(sb);
-    }
-
-    // 이벤트
-    g.addEventListener('mouseenter', (e) => showTooltip(e, d));
-    g.addEventListener('mouseleave', () => { tooltip.style.display='none'; });
-    g.addEventListener('click', () => showTooltip(null, d, true));
-
-    markersGroup.appendChild(g);
-  });
-
-  document.getElementById('cnt').textContent = count;
-}
-
-// ══════════════════════════════════════
-// 툴팁
-// ══════════════════════════════════════
-function showTooltip(e, d, pinned=false) {
-  document.getElementById('tt-name').textContent = d.name;
-  document.getElementById('tt-loc').textContent = d.loc;
-  document.getElementById('tt-units').textContent = d.units > 1 ? d.units+'세대' : '-';
-  document.getElementById('tt-price').textContent = d.price || (d.status||'-');
-  const typeMap = {apt:'아파트', reconstruction:'재건축', auction:'경매', commercial:'상가'};
-  document.getElementById('tt-type').textContent = typeMap[d.type]||d.type;
-  tooltip.style.display = 'block';
-  if(e) {
-    const cont = document.getElementById('map-container');
-    const r = cont.getBoundingClientRect();
-    let lx = e.clientX - r.left + 12;
-    let ly = e.clientY - r.top + 12;
-    if(lx + 200 > r.width) lx = lx - 224;
-    if(ly + 120 > r.height) ly = ly - 130;
-    tooltip.style.left = lx+'px';
-    tooltip.style.top = ly+'px';
-  }
-}
-
-// ══════════════════════════════════════
-// 줌 & 패닝
-// ══════════════════════════════════════
-function applyTransform() {
-  svg.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
-  svg.style.transformOrigin = 'center center';
-}
-
-function zoomIn() {
-  scale = Math.min(scale * 1.3, 8);
-  applyTransform();
-}
-function zoomOut() {
-  scale = Math.max(scale / 1.3, 0.5);
-  applyTransform();
-}
-function resetView() {
-  scale = 1; tx = 0; ty = 0;
-  applyTransform();
-  focusedDistrict = 'all';
-  document.querySelectorAll('.district-btn').forEach(b=>b.classList.remove('active'));
-  document.querySelector('.district-btn').classList.add('active');
-  renderMarkers();
-}
-
-svg.addEventListener('wheel', (e) => {
-  e.preventDefault();
-  const factor = e.deltaY < 0 ? 1.15 : 0.87;
-  scale = Math.min(Math.max(scale * factor, 0.5), 8);
-  applyTransform();
-}, {passive:false});
-
-svg.addEventListener('mousedown', (e) => {
-  isDragging = true;
-  startX = e.clientX; startY = e.clientY;
-  startTx = tx; startTy = ty;
-});
-window.addEventListener('mousemove', (e) => {
-  if(!isDragging) return;
-  tx = startTx + (e.clientX - startX);
-  ty = startTy + (e.clientY - startY);
-  applyTransform();
-});
-window.addEventListener('mouseup', () => { isDragging = false; });
-
-// 터치
-svg.addEventListener('touchstart', (e) => {
-  if(e.touches.length===1){
-    isDragging=true;
-    startX=e.touches[0].clientX; startY=e.touches[0].clientY;
-    startTx=tx; startTy=ty;
-  }
-},{passive:true});
-svg.addEventListener('touchmove', (e) => {
-  if(isDragging && e.touches.length===1){
-    tx = startTx + (e.touches[0].clientX-startX);
-    ty = startTy + (e.touches[0].clientY-startY);
-    applyTransform();
-  }
-},{passive:true});
-svg.addEventListener('touchend', ()=>{ isDragging=false; });
-
-// ══════════════════════════════════════
-// 필터 & 포커스
-// ══════════════════════════════════════
-function toggleFilter(btn, type) {
-  activeFilters[type] = !activeFilters[type];
-  btn.classList.toggle('active');
-  renderMarkers();
-}
-
-function setPrice(btn, max) {
-  maxPrice = max;
-  document.querySelectorAll('[onclick^="setPrice"]').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderMarkers();
-}
-
-function setUnits(btn, min) {
-  minUnits = min;
-  document.querySelectorAll('[onclick^="setUnits"]').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderMarkers();
-}
-
-const districtCenters = {
-  all:  {x:600, y:375, z:1},
-  jung: {x:580, y:270, z:3},
-  dong: {x:740, y:240, z:2.5},
-  seo:  {x:430, y:285, z:3},
-  nam:  {x:560, y:390, z:3},
-  buk:  {x:540, y:145, z:2.5},
-  suseong:{x:740, y:430, z:2.5},
-  dalseo:{x:420, y:450, z:2.5},
-  dalseong:{x:300, y:570, z:2},
+const COLORS = {
+  apt:            {bg:'#1d4ed8', bk:'#60a5fa'},
+  reconstruction: {bg:'#9d174d', bk:'#f472b6'},
+  auction:        {bg:'#1e293b', bk:'#64748b'},
+  commercial:     {bg:'#064e3b', bk:'#34d399'},
 };
 
-function focusDistrict(btn, district) {
-  focusedDistrict = district;
-  document.querySelectorAll('.district-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
+// ─── 마커 렌더 ───
+function render() {
+  mgEl.innerHTML=''; let cnt=0;
+  DATA.forEach(d=>{
+    if(!afilt[d.type]) return;
+    if(priceMode==='under5'  && (d.pv<=0||d.pv>50000))   return;
+    if(priceMode==='5to10'   && (d.pv<=50000||d.pv>100000)) return;
+    if(priceMode==='over10'  && d.pv<=100000) return;
+    if(d.units>1 && d.units<minUnits) return;
+    if(distFocus!=='all' && d.d!==distFocus) return;
+    cnt++;
+    const c=COLORS[d.type]||COLORS.apt;
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('transform',`translate(${d.x},${d.y})`);
+    g.style.cursor='pointer';
 
-  const c = districtCenters[district];
-  const cont = document.getElementById('map-container');
-  const cw = cont.clientWidth, ch = cont.clientHeight;
-  // SVG is 1200x750
-  scale = c.z;
-  tx = cw/2 - c.x * scale;
-  ty = ch/2 - c.y * scale;
-  applyTransform();
-  renderMarkers();
+    const lines=[d.name];
+    if(d.units>1) lines.push(d.units+'세대');
+    if(d.price)   lines.push(d.price);
+    const lh=16, px=10, py=7;
+    const w=Math.max(74, d.name.length*10+px*2);
+    const h=lines.length*lh+py*2;
+
+    const rect=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rect.setAttribute('x',-w/2); rect.setAttribute('y',-h/2);
+    rect.setAttribute('width',w); rect.setAttribute('height',h);
+    rect.setAttribute('rx',7); rect.setAttribute('fill',c.bg);
+    rect.setAttribute('stroke',c.bk); rect.setAttribute('stroke-width','1.8');
+    rect.setAttribute('fill-opacity','0.93');
+    g.appendChild(rect);
+
+    const sy=-h/2+py+lh*0.78;
+    lines.forEach((ln,i)=>{
+      const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+      t.setAttribute('text-anchor','middle'); t.setAttribute('y',sy+i*lh);
+      t.setAttribute('class', i===0?'ml': (ln.includes('억')&&d.price===ln)?'mp':'ms');
+      t.textContent=ln; g.appendChild(t);
+    });
+
+    if(d.status){
+      const bw=d.status.length*7.5+10;
+      const br=document.createElementNS('http://www.w3.org/2000/svg','rect');
+      br.setAttribute('x',-bw/2); br.setAttribute('y',h/2+2);
+      br.setAttribute('width',bw); br.setAttribute('height',14); br.setAttribute('rx',4);
+      br.setAttribute('fill',d.type==='reconstruction'?'#7f1d4e':'#0f172a');
+      br.setAttribute('stroke',d.type==='reconstruction'?'#f472b6':'#334155');
+      br.setAttribute('stroke-width','1'); g.appendChild(br);
+      const bt=document.createElementNS('http://www.w3.org/2000/svg','text');
+      bt.setAttribute('text-anchor','middle'); bt.setAttribute('y',h/2+12);
+      bt.setAttribute('class','mst');
+      bt.setAttribute('fill',d.type==='reconstruction'?'#fce7f3':'#94a3b8');
+      bt.textContent=d.status; g.appendChild(bt);
+    }
+    g.addEventListener('click',e=>{e.stopPropagation();showCard(d);});
+    mgEl.appendChild(g);
+  });
+  document.getElementById('cnt').textContent=cnt;
 }
 
-// ══════════════════════════════════════
-// 초기 렌더
-// ══════════════════════════════════════
-renderMarkers();
+// ─── 정보 카드 ───
+const TM={apt:'아파트',reconstruction:'재건축',auction:'경매',commercial:'상가'};
+function showCard(d){
+  document.getElementById('ic-name').textContent=d.name;
+  document.getElementById('ic-loc').textContent=d.loc;
+  document.getElementById('ic-units').textContent=d.units>1?d.units+'세대':'-';
+  document.getElementById('ic-price').textContent=d.price||d.status||'-';
+  document.getElementById('ic-type').textContent=TM[d.type]||d.type;
+  document.getElementById('icard').style.display='block';
+}
+wrap.addEventListener('click',()=>{ document.getElementById('icard').style.display='none'; });
+
+// ─── 변환 ───
+function applyT(){ mapEl.style.transform=`translate(${tx}px,${ty}px) scale(${sc})`; }
+
+function initView(){
+  const ww=wrap.clientWidth, wh=wrap.clientHeight;
+  sc=ww/1200; tx=0; ty=(wh-750*sc)/2; applyT();
+}
+
+function zoomAt(cx,cy,f){
+  const ns=Math.min(Math.max(sc*f,0.25),12);
+  tx=cx-(cx-tx)*(ns/sc); ty=cy-(cy-ty)*(ns/sc); sc=ns; applyT();
+}
+function zoomIn(){ const r=wrap.getBoundingClientRect(); zoomAt(r.width/2,r.height/2,1.3); }
+function zoomOut(){ const r=wrap.getBoundingClientRect(); zoomAt(r.width/2,r.height/2,0.77); }
+function resetView(){
+  initView(); distFocus='all';
+  document.querySelectorAll('.d-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.d-btn').classList.add('active');
+  render();
+}
+
+// ─── 마우스 ───
+wrap.addEventListener('mousedown',e=>{panning=true;px0=e.clientX;py0=e.clientY;ptx=tx;pty=ty;});
+window.addEventListener('mousemove',e=>{ if(!panning)return; tx=ptx+(e.clientX-px0); ty=pty+(e.clientY-py0); applyT(); });
+window.addEventListener('mouseup',()=>panning=false);
+wrap.addEventListener('wheel',e=>{ e.preventDefault(); const r=wrap.getBoundingClientRect(); zoomAt(e.clientX-r.left,e.clientY-r.top,e.deltaY<0?1.15:0.87); },{passive:false});
+
+// ─── 터치 ───
+function tdist(t){ return Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY); }
+function tmid(t){ return {x:(t[0].clientX+t[1].clientX)/2,y:(t[0].clientY+t[1].clientY)/2}; }
+
+wrap.addEventListener('touchstart',e=>{
+  e.preventDefault();
+  if(e.touches.length===1){
+    panning=true; pinching=false;
+    px0=e.touches[0].clientX; py0=e.touches[0].clientY; ptx=tx; pty=ty;
+  } else if(e.touches.length===2){
+    panning=false; pinching=true;
+    pd0=tdist(e.touches); ps0=sc;
+    const m=tmid(e.touches), r=wrap.getBoundingClientRect();
+    pmx=m.x-r.left; pmy=m.y-r.top; ptx=tx; pty=ty;
+  }
+},{passive:false});
+
+wrap.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  if(pinching&&e.touches.length===2){
+    const nd=tdist(e.touches), ns=Math.min(Math.max(ps0*nd/pd0,0.25),12);
+    const m=tmid(e.touches), r=wrap.getBoundingClientRect();
+    const cx=m.x-r.left, cy=m.y-r.top;
+    tx=cx-(pmx-ptx+cx)*(ns/ps0); ty=cy-(pmy-pty+cy)*(ns/ps0); sc=ns; applyT();
+  } else if(panning&&e.touches.length===1){
+    tx=ptx+(e.touches[0].clientX-px0); ty=pty+(e.touches[0].clientY-py0); applyT();
+  }
+},{passive:false});
+
+wrap.addEventListener('touchend',e=>{ if(e.touches.length<2)pinching=false; if(e.touches.length===0)panning=false; },{passive:true});
+
+// ─── 드로어 ───
+function toggleDrawer(){
+  drawerOpen=!drawerOpen;
+  document.getElementById('drawer').classList.toggle('open',drawerOpen);
+  document.getElementById('ftoggle').classList.toggle('open',drawerOpen);
+}
+
+// ─── 필터 ───
+function toggleFilter(btn,type){
+  afilt[type]=!afilt[type]; btn.classList.toggle('active'); render();
+}
+function setPrice(btn,mode){
+  priceMode=mode;
+  document.querySelectorAll('[onclick^="setPrice"]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); render();
+}
+function setUnits(btn,min){
+  minUnits=min;
+  document.querySelectorAll('[onclick^="setUnits"]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); render();
+}
+
+// ─── 구 포커스 ───
+const DC={
+  all:{x:600,y:375,z:1},
+  jung:{x:575,y:270,z:3.2}, dong:{x:745,y:245,z:2.8},
+  seo:{x:432,y:285,z:3.2},  nam:{x:558,y:395,z:3.4},
+  buk:{x:545,y:148,z:3},    suseong:{x:748,y:433,z:2.8},
+  dalseo:{x:420,y:452,z:2.8}, dalseong:{x:312,y:570,z:2.2},
+};
+function focusD(btn,dist){
+  distFocus=dist;
+  document.querySelectorAll('.d-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const c=DC[dist], ww=wrap.clientWidth, wh=wrap.clientHeight;
+  sc=c.z*(ww/1200); tx=ww/2-c.x*sc; ty=wh/2-c.y*sc; applyT(); render();
+}
+
+// ─── 초기 ───
+window.addEventListener('resize',initView);
+initView(); render();
 </script>
 </body>
 </html>
