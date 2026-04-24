@@ -3,48 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sophistpark 대구 부동산 그룹</title>
+    <title>대구 아파트 실거래가 - Sophistpark</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        * { box-sizing: border-box; }
         body {
-            font-family: 'Malgun Gothic', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8f9fa;
             margin: 0;
-            background-color: #f4f7f6;
+            padding: 10px;
+            color: #333;
         }
-        .container {
-            text-align: center;
-            padding: 50px;
-            background-color: white;
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 20px;
-        }
-        p {
-            color: #7f8c8d;
+        /* 헤더 스타일 */
+        header {
+            padding: 15px 5px;
+            font-weight: bold;
             font-size: 1.2em;
+            border-bottom: 1px solid #eee;
+            background: white;
+            margin: -10px -10px 15px -10px;
+            text-align: center;
         }
-        .test-badge {
-            display: inline-block;
-            padding: 5px 10px;
-            background-color: #e74c3c;
-            color: white;
-            border-radius: 5px;
-            font-size: 0.8em;
+        /* 카드 컨테이너 */
+        .card {
+            background: white;
+            border: 2px solid #ff4d4d; /* 이미지의 붉은 테두리 강조 */
+            border-radius: 8px;
+            padding: 15px;
             margin-bottom: 15px;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        /* 신고가 배지 */
+        .badge {
+            background-color: #ff4d4d;
+            color: white;
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            position: absolute;
+            top: -10px;
+            left: 10px;
+        }
+        /* 아파트 정보 */
+        .apt-name {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+        }
+        .comment-count {
+            color: #ff4d4d;
+            font-size: 0.8em;
+            margin-left: 5px;
+        }
+        /* 가격 정보 */
+        .price-section {
+            margin: 10px 0;
+        }
+        .price {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #e63946;
+        }
+        .price-diff {
+            font-size: 0.9em;
+            color: #ff4d4d;
+            margin-left: 5px;
+        }
+        /* 세부 상세 정보 */
+        .details {
+            font-size: 0.9em;
+            color: #666;
+            line-height: 1.6;
+        }
+        .meta-info {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #eee;
+            font-size: 0.85em;
+            color: #888;
+            display: flex;
+            gap: 10px;
+        }
+        /* 그래프 자리 (임시) */
+        .chart-placeholder {
+            float: right;
+            width: 80px;
+            height: 40px;
+            background: #e9ecef;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 10px;
+            line-height: 40px;
+            color: #adb5bd;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="test-badge">배포 테스트 중</div>
-        <h1>소피스트박 대구 부동산 그룹</h1>
-        <p>홈페이지에 오신 것을 환영합니다.</p>
+
+<header>대구 아파트 실거래가</header>
+
+<div class="card">
+    <div class="badge">신고가</div>
+    <div class="chart-placeholder">Graph</div>
+    <div class="apt-name">
+        두산위브더제니스 <span class="comment-count">💬 732</span>
     </div>
+    <div class="price-section">
+        <span class="price">26억</span>
+        <span class="price-diff">전고점 대비 +3,000만원 ↑</span>
+    </div>
+    <div class="details">
+        전용 171㎡(66평) · 28층 · 범어동
+    </div>
+    <div class="meta-info">
+        <span>📅 계약 2026-04-18</span>
+        <span>🏢 18년차</span>
+        <span>📍 수성구</span>
+    </div>
+</div>
+
+<div class="card" style="border: 1px solid #eee;">
+    <div class="chart-placeholder">Graph</div>
+    <div class="apt-name">수성3가롯데캐슬</div>
+    <div class="price-section">
+        <span class="price" style="color: #333;">17억 5,000만</span>
+    </div>
+    <div class="details">
+        전용 240㎡(93평) · 19층 · 수성동3가
+    </div>
+    <div class="meta-info">
+        <span>📅 계약 2026-04-20</span>
+        <span>🏢 19년차</span>
+        <span>📍 수성구</span>
+    </div>
+</div>
+
 </body>
 </html>
